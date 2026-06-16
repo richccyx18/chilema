@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>吃了吗？</title>
+<style>
+  :root { --bg:#1b1530; --card:#251c45; --accent:#ff7a59; --text:#fff; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; height:100%; }
+  body {
+    background:radial-gradient(120% 120% at 50% 0%, #2a2152 0%, var(--bg) 60%);
+    color:var(--text); font-family:-apple-system,"PingFang SC","Helvetica Neue",sans-serif;
+    display:flex; flex-direction:column; align-items:center;
+    min-height:100%; padding:18px 16px 28px; gap:14px; user-select:none;
+  }
+  h1 { font-size:22px; margin:4px 0 0; font-weight:700; letter-spacing:1px; }
+  .cats { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; max-width:440px; }
+  .cat {
+    border:1px solid rgba(255,255,255,.18); background:var(--card); color:var(--text);
+    padding:7px 13px; border-radius:999px; font-size:14px; cursor:pointer; transition:.15s;
+  }
+  .cat.active { background:var(--accent); border-color:var(--accent); font-weight:700; }
+  .stage { position:relative; width:min(86vw,340px); aspect-ratio:1/1; margin-top:4px; }
+  .pointer {
+    position:absolute; top:-6px; left:50%; transform:translateX(-50%);
+    width:0; height:0; border-left:14px solid transparent; border-right:14px solid transparent;
+    border-top:22px solid var(--accent); z-index:5; filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));
+  }
+  #wheel { width:100%; height:100%; transform:rotate(0deg); }
+  .spinning #wheel { transition:transform 4.2s cubic-bezier(.17,.67,.2,1); }
+  .hub {
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:74px; height:74px; border-radius:50%; background:var(--accent); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700;
+    cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.45); z-index:4;
+  }
+  .result { font-size:26px; font-weight:800; min-height:34px; text-align:center; }
+  .result span { color:var(--accent); }
+  .again {
+    border:none; background:var(--accent); color:#fff; font-size:17px; font-weight:700;
+    padding:12px 30px; border-radius:999px; cursor:pointer; box-shadow:0 4px 14px rgba(255,122,89,.4);
+  }
+  .again:active { transform:scale(.96); }
+  .hint { font-size:13px; opacity:.6; margin-top:-4px; }
+</style>
+</head>
+<body>
+  <h1>吃了吗？ 🍽️</h1>
+  <div class="cats" id="cats"></div>
+  <div class="stage" id="stage">
+    <div class="pointer"></div>
+    <canvas id="wheel" width="600" height="600"></canvas>
+    <div class="hub" id="hub">开转</div>
+  </div>
+  <div class="result" id="result">选个类别，点中间开转</div>
+  <button class="again" id="again">再转一次</button>
+  <div class="hint">点中间转盘或下方按钮都行</div>
+
+<script>
+const MENU = {
+  "全部随机": [],
+  "中式正餐": ["黄焖鸡","宫保鸡丁","鱼香肉丝","红烧肉","麻婆豆腐","回锅肉","糖醋里脊","番茄炒蛋","水煮肉片","酸菜鱼"],
+  "米饭快餐": ["卤肉饭","盖浇饭","煲仔饭","排骨饭","鸡腿饭","牛肉饭","蛋包饭","咖喱饭"],
+  "面食":     ["兰州拉面","牛肉面","炸酱面","重庆小面","热干面","酸辣粉","螺蛳粉","油泼面","馄饨","饺子"],
+  "西式快餐": ["汉堡","炸鸡","披萨","意面","薯条","牛排","卷饼","三明治"],
+  "火锅烧烤": ["火锅","麻辣烫","串串香","烤串","烤肉","冒菜","钵钵鸡","烤鱼"],
+  "夜宵":     ["小龙虾","炒粉","卤味","关东煮","煎饼","炒面","生煎","臭豆腐"],
+  "饮品甜点": ["奶茶","咖啡","果汁","蛋糕","双皮奶","杨枝甘露","冰淇淋","布丁"]
+};
+const COLORS = ["#ff7a59","#ffb454","#ffd56b","#7ed6a5","#5cc8ff","#9d8cff","#ff8fb1","#67e0c9"];
+
+const cv = document.getElementById("wheel");
+const ctx = cv.getContext("2d");
+const stage = document.getElementById("stage");
+const resultEl = document.getElementById("result");
+let current = "中式正餐";
+let items = [];
+let angle = 0;       // 当前转盘角度(度)
+let spinning = false;
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+function pool(cat){
+  if(cat === "全部随机"){
+    const all = Object.entries(MENU).filter(([k])=>k!=="全部随机").flatMap(([,v])=>v);
+    return shuffle(all).slice(0,10);   // 太多挤不下，每次随机抽10个上盘
+  }
+  return MENU[cat].slice();
+}
+
+function buildCats(){
+  const box = document.getElementById("cats");
+  box.innerHTML = "";
+  Object.keys(MENU).forEach(cat=>{
+    const b = document.createElement("div");
+    b.className = "cat" + (cat===current ? " active":"");
+    b.textContent = cat;
+    b.onclick = ()=>{ if(spinning) return; current=cat; setCategory(); };
+    box.appendChild(b);
+  });
+}
+
+function setCategory(){
+  items = pool(current);
+  angle = 0;
+  stage.classList.remove("spinning");
+  cv.style.transform = "rotate(0deg)";
+  buildCats();
+  draw();
+  resultEl.innerHTML = "点中间开转 👇";
+}
+
+function draw(){
+  const N = items.length, R = 300, cx = 300, cy = 300;
+  ctx.clearRect(0,0,600,600);
+  const step = (Math.PI*2)/N;
+  for(let i=0;i<N;i++){
+    const a0 = -Math.PI/2 + i*step;       // 从正上方开始
+    const a1 = a0 + step;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,R,a0,a1);
+    ctx.closePath();
+    ctx.fillStyle = COLORS[i % COLORS.length];
+    ctx.fill();
+    // 文字
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.rotate(a0 + step/2);
+    ctx.fillStyle = "#3a2a18";
+    ctx.font = "bold 22px -apple-system,'PingFang SC',sans-serif";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.fillText(items[i], R-18, 0);
+    ctx.restore();
+  }
+  // 外圈
+  ctx.beginPath(); ctx.arc(cx,cy,R-1,0,Math.PI*2);
+  ctx.lineWidth = 6; ctx.strokeStyle = "rgba(255,255,255,.25)"; ctx.stroke();
+}
+
+function spin(){
+  if(spinning || !items.length) return;
+  spinning = true;
+  resultEl.innerHTML = "转动中…";
+  const N = items.length, step = 360/N;
+  const idx = Math.floor(Math.random()*N);
+  // 指针在正上方，第 idx 段中心当前在 (idx*step + step/2) 处(顺时针,0=正上)
+  const center = idx*step + step/2;
+  const turns = 5 + Math.floor(Math.random()*3);   // 5~7 圈
+  const target = angle + turns*360 + (360 - (((angle % 360) + center) % 360));
+  angle = target;
+  stage.classList.add("spinning");
+  cv.style.transform = `rotate(${target}deg)`;
+  setTimeout(()=>{
+    spinning = false;
+    resultEl.innerHTML = "今天吃：<span>"+items[idx]+"</span>";
+  }, 4300);
+}
+
+document.getElementById("hub").onclick = spin;
+document.getElementById("again").onclick = spin;
+
+setCategory();
+</script>
+</body>
+</html>
