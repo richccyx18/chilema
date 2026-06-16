@@ -10,6 +10,20 @@ let spinning = false, curRegion = "";
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function sample(list){ const a=list.slice(); return a.length>MAX_SEG ? shuffle(a).slice(0,MAX_SEG) : a; }
 
+// 抽中时中心炸开一圈食物 emoji
+function burst(){
+  const emo=["🍜","🍚","🍗","🍕","🍔","🍣","🌮","🍱","🥟","🍙","😋","✨","🎉","🧋"];
+  for(let i=0;i<18;i++){
+    const s=document.createElement("div"); s.className="confetti"; s.textContent=emo[Math.floor(Math.random()*emo.length)];
+    const ang=Math.random()*Math.PI*2, dist=70+Math.random()*130;
+    s.style.left="50%"; s.style.top="44%";
+    s.style.setProperty("--dx",Math.round(Math.cos(ang)*dist)+"px");
+    s.style.setProperty("--dy",Math.round(Math.sin(ang)*dist-50)+"px");
+    s.style.animationDelay=(Math.random()*0.08).toFixed(2)+"s";
+    document.body.appendChild(s); setTimeout(()=>s.remove(),1200);
+  }
+}
+
 function go(key){ nav.push(key); render(); }
 function back(){ if(nav.length>1){ nav.pop(); render(); } }
 
@@ -74,7 +88,8 @@ function renderWheel(s){
     const turns=5+Math.floor(Math.random()*3);
     const target=angle+turns*360+(360-(((angle%360)+center)%360)); angle=target;
     stage.classList.add("spinning"); cv.style.transform="rotate("+target+"deg)";
-    setTimeout(()=>{ spinning=false; result.innerHTML=prefix+"<span>"+cur[idx]+"</span>"; }, 4300);
+    setTimeout(()=>{ spinning=false; result.innerHTML=prefix+"<span>"+cur[idx]+"</span>";
+      result.classList.remove("pop"); void result.offsetWidth; result.classList.add("pop"); burst(); }, 4300);
   }
   stage.querySelector(".hub").onclick=spin; again.onclick=spin;
 
