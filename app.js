@@ -38,7 +38,7 @@ function header(s){
 
 function render(){
   const s=SCREENS[nav[nav.length-1]];
-  app.innerHTML=""; app.appendChild(header(s));
+  app.innerHTML=""; if(!s.hero) app.appendChild(header(s));
   if(s.type==="menu") renderMenu(s); else renderWheel(s);
 }
 
@@ -46,6 +46,14 @@ function renderMenu(s){
   const box=document.createElement("div"); box.className="menu";
   s.items.forEach(it=>{ const a=document.createElement("button"); a.className="mbtn"; a.textContent=it.label;
     a.style.background=it.color||"#ff7a59"; a.onclick=()=>go(it.go); box.appendChild(a); });
+  if(s.hero){
+    const hero=document.createElement("div"); hero.className="hero";
+    const t=document.createElement("div"); t.className="herottl"; t.textContent=(s.emoji?s.emoji+" ":"")+s.title; hero.appendChild(t);
+    const g=document.createElement("div"); g.className="garland"; g.textContent="🍜 🍗 🍣 🍕 🍔"; hero.appendChild(g);
+    hero.appendChild(box);
+    if(s.slogan){ const sl=document.createElement("div"); sl.className="slogan"; sl.innerHTML=s.slogan.replace(/\n/g,"<br>"); hero.appendChild(sl); }
+    app.appendChild(hero); return;
+  }
   app.appendChild(box);
 }
 

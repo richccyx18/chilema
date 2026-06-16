@@ -45,6 +45,19 @@
                  background:linear-gradient(rgba(255,255,255,.28), transparent); }
   .mbtn:active{ transform:scale(.96) translateY(2px); box-shadow:0 5px 14px rgba(0,0,0,.4); }
 
+  /* 首页 hero */
+  .hero{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px; width:100%; }
+  .hero .menu{ margin-top:0; }
+  .herottl{ font-size:48px; font-weight:900; letter-spacing:2px; line-height:1.1; text-align:center;
+            background:linear-gradient(135deg,#ffe08a 0%,#ff7a59 55%,#ff5fa2 100%);
+            -webkit-background-clip:text; background-clip:text; color:transparent;
+            filter:drop-shadow(0 6px 16px rgba(255,122,89,.35)); animation:bob 3s ease-in-out infinite; }
+  @keyframes bob{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+  .garland{ font-size:22px; letter-spacing:7px; opacity:.92; margin-top:-8px; }
+  .slogan{ font-size:15px; line-height:1.9; text-align:center; max-width:300px; font-weight:600; color:#ffe2d4;
+           padding:13px 20px; border-radius:16px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12);
+           box-shadow:0 6px 18px rgba(0,0,0,.25); }
+
   .top { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; max-width:440px; width:100%; }
   .chip { border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.07); color:#fff;
           padding:8px 14px; border-radius:999px; font-size:14px; cursor:pointer; transition:.18s;

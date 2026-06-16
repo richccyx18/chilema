@@ -4,7 +4,8 @@
 
 const SCREENS = {
 
-  home: { type:"menu", title:"吃了吗？", emoji:"🍽️", items:[
+  home: { type:"menu", title:"吃了吗？", emoji:"🍽️", hero:true,
+    slogan:"不管开心还是难过，\n都要记得好好吃饭 🍚", items:[
     { label:"🍽️ 吃了吗", go:"eat_menu",   color:"#ff7a59" },
     { label:"🍺 喝了吗", go:"drink_menu", color:"#5cc8ff" },
   ]},
