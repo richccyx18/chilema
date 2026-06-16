@@ -7,6 +7,30 @@ const app = document.getElementById("app");
 let nav = ["home"];
 let spinning = false, curRegion = "";
 
+// 背景飘字：吃的页面飘食物，喝的页面飘酒；满屏随机散布、各方向乱飘
+const BG_EMOJI = {
+  food:  ["🍜","🍔","🍣","🍕","🍗","🍙","🥟","🌮","🍱","🍰","🍤","🍚","🍛","🍝","🥘","🍲","🍢","🧆","🍦","🍩"],
+  drink: ["🍺","🍻","🍷","🥂","🍸","🍹","🥃","🧋","🥤","🍶","🍾","☕","🧉","🫖","🍵","🧃"],
+};
+let bgTheme = "";
+function setBg(theme){
+  if(theme===bgTheme) return; bgTheme=theme;
+  const bg=document.getElementById("bg"); if(!bg) return; bg.innerHTML="";
+  const set=BG_EMOJI[theme]||BG_EMOJI.food;
+  for(let i=0;i<22;i++){
+    const s=document.createElement("span"); s.textContent=set[Math.floor(Math.random()*set.length)];
+    s.style.left=(Math.random()*94).toFixed(1)+"%"; s.style.top=(Math.random()*92).toFixed(1)+"%";
+    s.style.fontSize=(20+Math.random()*22).toFixed(0)+"px"; s.style.opacity=(0.1+Math.random()*0.14).toFixed(2);
+    s.style.setProperty("--dx",(Math.random()*160-80).toFixed(0)+"px");
+    s.style.setProperty("--dy",(Math.random()*160-80).toFixed(0)+"px");
+    s.style.setProperty("--rot",(Math.random()*300-150).toFixed(0)+"deg");
+    s.style.setProperty("--dur",(12+Math.random()*16).toFixed(0)+"s");
+    s.style.animationDelay=(-Math.random()*24).toFixed(1)+"s";
+    bg.appendChild(s);
+  }
+}
+function themeFor(key){ return ["drink_menu","alcohol","milktea","soda"].indexOf(key)>=0 ? "drink" : "food"; }
+
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function sample(list){ const a=list.slice(); return a.length>MAX_SEG ? shuffle(a).slice(0,MAX_SEG) : a; }
 
@@ -37,7 +61,8 @@ function header(s){
 }
 
 function render(){
-  const s=SCREENS[nav[nav.length-1]];
+  const key=nav[nav.length-1]; const s=SCREENS[key];
+  setBg(themeFor(key));
   app.innerHTML=""; if(!s.hero) app.appendChild(header(s));
   if(s.type==="menu") renderMenu(s); else renderWheel(s);
 }
