@@ -21,10 +21,10 @@ function setBg(theme){
     const s=document.createElement("span"); s.textContent=set[Math.floor(Math.random()*set.length)];
     s.style.left=(Math.random()*94).toFixed(1)+"%"; s.style.top=(Math.random()*92).toFixed(1)+"%";
     s.style.fontSize=(20+Math.random()*22).toFixed(0)+"px"; s.style.opacity=(0.1+Math.random()*0.14).toFixed(2);
-    s.style.setProperty("--dx",(Math.random()*160-80).toFixed(0)+"px");
-    s.style.setProperty("--dy",(Math.random()*160-80).toFixed(0)+"px");
-    s.style.setProperty("--rot",(Math.random()*300-150).toFixed(0)+"deg");
-    s.style.setProperty("--dur",(12+Math.random()*16).toFixed(0)+"s");
+    s.style.setProperty("--dx",(Math.random()*400-200).toFixed(0)+"px");
+    s.style.setProperty("--dy",(Math.random()*400-200).toFixed(0)+"px");
+    s.style.setProperty("--rot",(Math.random()*480-240).toFixed(0)+"deg");
+    s.style.setProperty("--dur",(4.5+Math.random()*5.5).toFixed(1)+"s");
     s.style.animationDelay=(-Math.random()*24).toFixed(1)+"s";
     bg.appendChild(s);
   }
